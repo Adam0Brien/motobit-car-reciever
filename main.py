@@ -1,47 +1,57 @@
-def on_received_value_deprecated(name, value):
+def on_received_value(name, value):
     global timerCounter
     motobit.enable(MotorPower.ON)
-    led.toggle(2, 4)
-    led.toggle(2, 4)
     if name == "right":
         timerCounter = 0
-        led.toggle(0, 0)
-        led.toggle(0, 0)
-        if value >= 65:
-            motobit.set_motor_speed(Motor.RIGHT, MotorDirection.FORWARD, 50)
-            led.plot(0, 0)
-            led.unplot(4, 0)
-        elif value >= 35:
-            motobit.set_motor_speed(Motor.RIGHT, MotorDirection.REVERSE, 50)
+        if value > 65:
+            motobit.set_motor_speed(Motor.RIGHT, MotorDirection.FORWARD, value)
+            showSpeed(4, value)
+        elif value < 35:
+            motobit.set_motor_speed(Motor.RIGHT, MotorDirection.REVERSE, value)
+            showSpeed(4, value)
+        elif value < 65 and value > 35:
+            motobit.enable(MotorPower.OFF)
     elif name == "left":
         timerCounter = 0
-        led.toggle(0, 0)
-        led.toggle(0, 0)
-        if value >= 65:
+        if value > 65:
             motobit.set_motor_speed(Motor.LEFT, MotorDirection.FORWARD, 50)
-            led.plot(0, 0)
-            led.unplot(4, 0)
-        elif value >= 35:
+        elif value < 35:
             motobit.set_motor_speed(Motor.LEFT, MotorDirection.REVERSE, 50)
-radio.on_received_value_deprecated(on_received_value_deprecated)
+        elif value < 65 and value > 35:
+            motobit.enable(MotorPower.OFF)
+        timerCounter = 0
+radio.on_received_value(on_received_value)
 
+def showSpeed(ledColumn: number, motorSpeed: number):
+    led.plot(ledColumn, Math.map(motorSpeed, 0, 100, 0, 4))
 timerCounter = 0
+radio.set_group(1)
+motobit.enable(MotorPower.ON)
 timerCounter = 0
+ledRow3 = 0
 basic.show_leds("""
-    . . . . .
+    # . . . #
         . . . . .
         . . # . .
         . . . . .
-        # . . . .
+        # . . . #
 """)
-radio.set_group(1)
-basic.show_string("1 j ")
+basic.show_string("hello")
 # heartbeat
 
 def on_forever():
     global timerCounter
-    motobit.enable(MotorPower.ON)
-    led.plot(2, 2)
-    led.unplot(2, 2)
     timerCounter += 1
+    if timerCounter > 5:
+        motobit.enable(MotorPower.OFF)
 basic.forever(on_forever)
+
+
+def displayMotorSpeed(ledColumn2: number, motorSpeed: number):
+    global ledRow3
+    ledRow3 = pins.map(motorSpeed, -100, 200, 4, 0)
+    for index62 in range(5):
+        if index62 < ledRow3:
+            led.unplot(ledColumn2, index62)
+        else:
+            led.plot(ledColumn2, index62)
